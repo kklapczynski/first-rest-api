@@ -1,3 +1,4 @@
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -23,12 +24,20 @@ public class App {
         }
 
         class ImageFileHandler implements HttpHandler {
+
             public void handle(HttpExchange t) throws IOException {
-                File file = new File("src/main/resources/europe_map.svg");
+                File file = new File("src/main/resources/balon.jpg");
+//                File file = new File("src/main/resources/europe_map.svg");
 //                Path path = Paths.get("src/main/resources/Lion-vector.svg");
 ////              System.out.println("path: " + path.toString());
 //                Boolean fileNotExists = Files.notExists(path);
 //                System.out.println("File not exists?: " + fileNotExists);
+                // CORS : cross-origin-resource-sharing blocks access to endpoint from other domain - here angular app running on localhost:4200
+                // settings to allow access
+                Headers headers = t.getResponseHeaders();
+                headers.add("Access-Control-Allow-Origin", "http://localhost:4200");
+                headers.add("Content-Type", "image/jpeg");
+//                headers.add("Content-Type", "image/svg+xml");
                 t.sendResponseHeaders(200, file.length());
                 OutputStream os = t.getResponseBody();
                 Files.copy(file.toPath(), os);
