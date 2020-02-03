@@ -1,4 +1,3 @@
-import com.google.gson.Gson;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -12,8 +11,12 @@ import java.nio.file.Files;
 import java.util.Set;
 
 public class App {
+    private static final String RESOURCES_PATH = "src/main/resources/";
+
+
     public static void main(String[] args) throws IOException {
-        System.out.println("Hello world.");
+        SvgResources svgResources = new SvgResources();
+        final Set<String> mapsNamesSet = svgResources.getFilesNamesArray(RESOURCES_PATH);
 
         class FirstHttpHandler implements HttpHandler {
             public void handle(HttpExchange t) throws IOException {
@@ -26,9 +29,18 @@ public class App {
         }
 
         class SvgHandler implements HttpHandler {
-//            TODO: add query = file name to get requested map
             public void handle(HttpExchange t) throws IOException {
-                File file = new File("src/main/resources/world.svg");
+                String fileName = t.getRequestURI().getQuery();
+                String pathname = "src/main/resources/";
+
+                // check if there is query and if matches any map name from resources
+                if(fileName != null && mapsNamesSet.contains(fileName)) {
+                    pathname += fileName;
+
+                } else {    // else show world map
+                    pathname += "world.svg";
+                }
+                File file = new File(pathname);
                 // CORS : cross-origin-resource-sharing blocks access to endpoint from other domain - here angular app running on localhost:4200
                 // settings to allow access
                 Headers headers = t.getResponseHeaders();
@@ -63,7 +75,6 @@ public class App {
         server.createContext("/testMapsList", new SvgListHandler());
         server.setExecutor(null); // creates a default executor
         server.start();
-        SvgResources svgResources = new SvgResources();
         System.out.println(svgResources.getFilesNamesJson("src/main/resources"));
         System.out.println(svgResources.getFilesNamesArray("src/main/resources"));
         System.out.println("End1");
